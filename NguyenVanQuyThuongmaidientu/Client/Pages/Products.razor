@@ -1,0 +1,33 @@
+﻿@page "/products"
+@inject HttpClient Http
+@inject NguyenVanQuyThuongmaidientu.Client.Services.CartService.CartService CartService
+@using NguyenVanQuyThuongmaidientu.Shared
+@using System.Net.Http.Json
+
+<h3>Sản phẩm</h3>
+
+<ul>
+    @foreach (var product in products)
+    {
+        <li>
+            <h4>@product.Title</h4>
+            <p>@product.Description</p>
+            <p>@product.Price VND</p>
+            <button @onclick="() => AddToCart(product)">Thêm vào giỏ hàng</button>
+        </li>
+    }
+</ul>
+
+@code {
+    private List<Product> products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await Http.GetFromJsonAsync<List<Product>>("api/products");
+    }
+
+    private void AddToCart(Product product)
+    {
+        CartService.AddToCart(product);
+    }
+}

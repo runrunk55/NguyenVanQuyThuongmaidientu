@@ -1,0 +1,85 @@
+﻿@page "/checkout"
+@inject CartService CartService
+@inject HttpClient Http
+
+<h3 class="checkout-title">Thông tin Thanh toán</h3>
+
+<div class="checkout-container">
+    <div class="checkout-form">
+        <h4>Thông tin khách hàng</h4>
+        <div class="form-group">
+            <label>Tên khách hàng</label>
+            <input @bind="customerName" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input @bind="email" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Số điện thoại</label>
+            <input @bind="phoneNumber" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Địa chỉ nhận hàng</label>
+            <input @bind="address" class="form-control" />
+        </div>
+        <button @onclick="SubmitOrder" class="btn btn-primary">Thanh toán</button>
+    </div>
+
+    <div class="cart-summary">
+        <h4>Giỏ hàng của bạn</h4>
+        <ul class="cart-items">
+            @foreach (var product in CartService.GetCartItems())
+            {
+                <li class="cart-item">
+                    <img src="@product.ImageUrl" alt="@product.Title" class="product-image" />
+                    <div class="item-details">
+                        <h4>@product.Title</h4>
+                        <p class="price">@product.Price VND</p>
+                        <button class="remove-button" @onclick="() => RemoveFromCart(product.Id)">Xóa</button>
+                    </div>
+                </li>
+            }
+        </ul>
+        <p class="total-amount">Tổng tiền: @CartService.TotalAmount VND</p>
+    </div>
+</div>
+
+@code {
+    private string customerName = string.Empty;
+    private string email = string.Empty;
+    private string phoneNumber = string.Empty;
+    private string address = string.Empty;
+
+    private async Task SubmitOrder()
+    {
+        var payment = new Payment
+            {
+                CustomerName = customerName,
+                Email = email,
+                PhoneNumber = phoneNumber,
+                Address = address,
+                TotalAmount = CartService.TotalAmount,
+                OrderDate = DateTime.Now
+            };
+
+        var response = await Http.PostAsJsonAsync("api/payment", payment);
+
+        if (response.IsSuccessStatusCode)
+        {
+            CartService.ClearCart();
+            // Hiển thị thông báo thành công hoặc chuyển hướng đến trang cảm ơn
+        }
+        else
+        {
+            // Hiển thị thông báo lỗi
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error: {errorMessage}");
+        }
+    }
+
+    private void RemoveFromCart(int productId)
+    {
+        CartService.RemoveFromCart(productId);
+    }
+}

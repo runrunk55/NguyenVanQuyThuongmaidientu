@@ -1,0 +1,33 @@
+﻿@page "/cart"
+@inject CartService CartService
+
+<h3 class="cart-header">Giỏ hàng của bạn</h3>
+
+@if (CartService.GetCartItems().Count == 0)
+{
+    <p class="empty-cart">Giỏ hàng của bạn đang trống.</p>
+}
+else
+{
+    <ul class="cart-items">
+        @foreach (var product in CartService.GetCartItems())
+        {
+            <li class="cart-item">
+                <img src="@product.ImageUrl" alt="@product.Title" class="product-image" />
+                <div class="item-details">
+                    <h4>@product.Title</h4>
+                    <p class="price">@product.Price VND</p>
+                    <button class="remove-button" @onclick="() => RemoveFromCart(product.Id)">Xóa</button>
+                </div>
+            </li>
+        }
+    </ul>
+    <p class="total-amount">Tổng tiền: @CartService.TotalAmount VND</p>
+}
+
+@code {
+    private void RemoveFromCart(int productId)
+    {
+        CartService.RemoveFromCart(productId);
+    }
+}
